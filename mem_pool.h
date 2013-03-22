@@ -17,5 +17,7 @@ void MPool_Collectfree(MPool* pool);
 void MPool_Ex_Tryshrink(MPool* pool,void* buf,uint32_t nlength);
 char MPool_Ex_Trygrow(MPool* pool,void* buf,uint32_t nlength);
 void MPool_Ex_FreeCleanup(MPool* pool,void* buf);
+void *MPool_Ex_AllocJoin(MPool* pool,uint32_t length);
+void MPool_Ex_ResetAllocCursor(MPool* pool);
 
 #endif // MEM_POOL_H_INCLUDED

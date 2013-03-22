@@ -110,5 +110,40 @@ void MPool_Ex_FreeCleanup(MPool* pool,void* buf){
     }
     *unit=skip;
 }
+void *MPool_Ex_AllocJoin(MPool* pool,uint32_t length){
+    uint32_t curcur,lng,plen;
+    uint32_t i;
+    lng = (length+7)/4; // (length/4 with round up always) +1
+    curcur=pool->curcur;
+    while(curcur<pool->tlength){
+        plen=(pool->tpool[curcur]);
+        if(!(plen&USED))
+        {
+            i=curcur+plen;
+            while(i<pool->tlength){
+                if(pool->tpool[i]&USED)break;
+                if((i-curcur)>=lng)break;
+                i+=pool->tpool[i];
+            }
+            plen=i-curcur;
+            if(plen>=lng){
+                if(plen>lng){
+                    pool->tpool[curcur+lng]=plen-lng;
+                    pool->tpool[curcur]=lng;
+                    pool->curcur=curcur+lng;
+                }else{
+                    pool->curcur=curcur+plen;
+                }
+                pool->tpool[curcur]|=USED;
+                return &(pool->tpool[curcur+1]);
+            }
+        }
+        curcur+=((pool->tpool[curcur])&MASK);
+    }
+    return NULL;
+}
+void MPool_Ex_ResetAllocCursor(MPool* pool){
+    pool->curcur=0;
+}
 
 // xxx
