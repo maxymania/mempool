@@ -62,4 +62,53 @@ void MPool_Collectfree(MPool* pool){
     pool->curcur=nwcc;
 }
 
+
+// Ex api - Advanced features for Advanced users
+void MPool_Ex_Tryshrink(MPool* pool,void* buf,uint32_t nlength){
+    uint32_t nlng,skip;
+    //uint32_t* last = &(pool->tpool[pool->tlength]);
+    uint32_t* unit = buf;
+    nlng = (nlength+7)/4; // (length/4 with round up always) +1
+    unit--;
+    skip = (*unit)&MASK;
+    if( (skip-nlng)>2 ){
+        *unit = nlng|USED;
+        unit[nlng]=(skip-nlng)&MASK;
+    }
+}
+char MPool_Ex_Trygrow(MPool* pool,void* buf,uint32_t nlength){
+    uint32_t nlng,skip;
+    uint32_t* last = &(pool->tpool[pool->tlength]);
+    uint32_t* unit = buf;
+    nlng = (nlength+7)/4; // (length/4 with round up always) +1
+    unit--;
+    skip = (*unit)&MASK;
+    while((skip<nlng)){
+        if((&unit[skip])>=last)return 0;
+        if(unit[skip]&USED)return 0;
+        skip+=(unit[skip]&MASK);
+    }
+    if( (skip-nlng)>2 ){
+        *unit = nlng|USED;
+        unit[nlng]=(skip-nlng)&MASK;
+    }else{
+        *unit=skip|USED;
+    }
+    return 255;
+}
+void MPool_Ex_FreeCleanup(MPool* pool,void* buf){
+    uint32_t skip;
+    uint32_t* last = &(pool->tpool[pool->tlength]);
+    uint32_t* unit = buf;
+    unit--;
+    *unit &= MASK;
+    skip = *unit;
+    for(;;){
+        if((&unit[skip])>=last)break;
+        if(unit[skip]&USED)break;
+        skip+=(unit[skip]&MASK);
+    }
+    *unit=skip;
+}
+
 // xxx

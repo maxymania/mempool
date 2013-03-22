@@ -14,4 +14,8 @@ void *MPool_Allocate(MPool* pool,uint32_t length);
 void MPool_Free(MPool* pool,void* buf);
 void MPool_Collectfree(MPool* pool);
 
+void MPool_Ex_Tryshrink(MPool* pool,void* buf,uint32_t nlength);
+char MPool_Ex_Trygrow(MPool* pool,void* buf,uint32_t nlength);
+void MPool_Ex_FreeCleanup(MPool* pool,void* buf);
+
 #endif // MEM_POOL_H_INCLUDED
